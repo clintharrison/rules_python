@@ -26,7 +26,7 @@ load("@bazel_federation//:repositories.bzl", "rules_python_deps")
 rules_python_deps()
 
 load("@bazel_federation//setup:rules_python.bzl",  "rules_python_setup")
-rules_python_setup(use_pip=True)
+rules_python_setup(use_pip=False)
 
 # Everything below this line is used only for developing rules_python. Users
 # should not copy it to their WORKSPACE.

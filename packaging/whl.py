@@ -18,6 +18,7 @@ import json
 import os
 import pkg_resources
 import re
+import sys
 import zipfile
 
 
@@ -42,9 +43,14 @@ class Wheel(object):
     parts = self.basename().split('-')
     return parts[1]
 
+  def py_version(self):
+    # Write the current Python version, since this may determine which requirements end up as deps
+    # of the generated py_library
+    return 'py{}'.format(sys.version_info.major)
+
   def repository_name(self):
     # Returns the canonical name of the Bazel repository for this package.
-    canonical = 'pypi__{}_{}'.format(self.distribution(), self.version())
+    canonical = 'pypi__{}_{}__{}'.format(self.distribution(), self.version(), self.py_version())
     # Escape any illegal characters with underscore.
     return re.sub('[-.+]', '_', canonical)
 
@@ -143,7 +149,7 @@ def main():
 package(default_visibility = ["//visibility:public"])
 
 load("@rules_python//python:defs.bzl", "py_library")
-load("{requirements}", "requirement")
+load("{requirements}", "requirements")
 
 py_library(
     name = "pkg",
@@ -152,25 +158,19 @@ py_library(
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["."],
-    deps = [{dependencies}],
+    deps = {dependencies},
 )
 {extras}""".format(
   requirements=args.requirements,
-  dependencies=','.join([
-    'requirement("%s")' % d
-    for d in whl.dependencies()
-  ]),
+  dependencies=('requirements([%s])' % ', '.join('"%s"' % d for d in whl.dependencies())),
   extras='\n\n'.join([
     """py_library(
     name = "{extra}",
     deps = [
-        ":pkg",{deps}
-    ],
+        ":pkg"
+    ] + requirements([{deps}]),
 )""".format(extra=extra,
-            deps=','.join([
-                'requirement("%s")' % dep
-                for dep in whl.dependencies(extra)
-            ]))
+            deps=','.join('"%s"' % dep for dep in whl.dependencies(extra)))
     for extra in args.extras or []
   ])))
 

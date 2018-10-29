@@ -15,13 +15,13 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("@examples_helloworld//:requirements.bzl", "requirement")
+load("//examples/helloworld:requirements.bzl", "requirements")
 load("//python:defs.bzl", "py_library", "py_test")
 
 py_library(
     name = "helloworld",
     srcs = ["helloworld.py"],
-    deps = [requirement("futures")],
+    deps = requirements(["futures"]),
 )
 
 py_test(
@@ -30,3 +30,5 @@ py_test(
     deps = [":helloworld"],
     python_version = "PY2",
 )
+
+exports_files(["requirements.txt"])

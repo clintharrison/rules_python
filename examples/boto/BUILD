@@ -15,16 +15,18 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("@examples_boto//:requirements.bzl", "requirement")
+load("//examples/boto:requirements.bzl", "requirements")
 load("//python:defs.bzl", "py_test")
 
 py_test(
     name = "boto_test",
     srcs = ["boto_test.py"],
-    deps = [
-        requirement("boto3"),
+    deps = requirements([
+        "boto3",
         # six is a transitive dependency via python-dateutil. Explicitly depend
         # on it to work around issue #70; see issue #98.
-        requirement("six"),
-    ],
+        "six",
+    ]),
 )
+
+exports_files(["requirements.txt"])

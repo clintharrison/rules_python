@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
+load("//resolver:def.bzl", "pex_resolver")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -29,3 +30,34 @@ filegroup(
     ],
     visibility = ["//distro:__pkg__"],
 )
+
+pex_resolver(
+    name = "resolve_requirements",
+    requirement = "//python:requirements.txt",
+    # this is used to load dependencies of one whl_library from the same resolved set
+    requirements_label = "@rules_python//python:requirements.bzl",
+    platforms = [
+        "macosx_10_13-x86_64-cp-36-cp36m",
+        "linux-x86_64-cp-36-cp36m",
+    ],
+    python_interpreter = "python",
+    target_path = "python/requirements.bzl",
+)
+
+# `bazel run //:resolve_examples_helloworld_requirements` will resolve the requirements from its requirements.txt
+# and write the generated requirements.bzl to examples/helloworld/requirements.bzl if resolving all dependencies for
+# the given platforms was successful.
+#
+# extras is excluded for now, it has a dependency on `googleapis-common-protos` which doesn't have a wheel on PyPI
+[pex_resolver(
+    name = "resolve_examples_%s_requirements" % name,
+    requirement = "//examples/%s:requirements.txt" % name,
+    # this is used to load dependencies of one whl_library from the same resolved set
+    requirements_label = "@rules_python//examples/%s:requirements.bzl" % name,
+    platforms = [
+        "macosx_10_13-x86_64-cp-36-cp36m",
+        "linux-x86_64-cp-36-cp36m",
+    ],
+    python_interpreter = "python",
+    target_path = "examples/%s/requirements.bzl" % name,
+) for name in ("boto", "helloworld", "version")]

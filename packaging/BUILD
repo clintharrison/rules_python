@@ -16,14 +16,14 @@ licenses(["notice"])  # Apache 2.0
 
 load("//python:defs.bzl", "py_library", "py_test")
 load("@subpar//:subpar.bzl", "par_binary")
-load("@piptool_deps//:requirements.bzl", "requirement")
+load("//python:requirements.bzl", "requirements")
 
 py_library(
     name = "whl",
     srcs = ["whl.py"],
-    deps = [
-        requirement("setuptools"),
-    ],
+    deps = requirements([
+        "setuptools",
+    ]),
 )
 
 py_test(
@@ -38,8 +38,9 @@ py_test(
     ],
     deps = [
         ":whl",
-        requirement("mock"),
-    ],
+    ] + requirements([
+        "mock",
+    ]),
 )
 
 par_binary(
@@ -47,9 +48,10 @@ par_binary(
     srcs = ["piptool.py"],
     deps = [
         ":whl",
-        requirement("pip"),
-        requirement("wheel"),
-    ],
+    ] + requirements([
+        "pip",
+        "wheel",
+    ]),
 )
 
 par_binary(

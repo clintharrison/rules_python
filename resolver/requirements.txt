@@ -1,0 +1,4 @@
+urllib3<1.23
+requests[security]==2.18.4
+subprocess32
+pex
